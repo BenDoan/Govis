@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -46,6 +47,7 @@ func main() {
 type JsonCfg struct {
 	TickInterval int
 	LogName      string
+	MinIdleTime  int
 }
 
 func (I *JsonCfg) GetConfigFile(path string) *JsonCfg {
@@ -64,6 +66,12 @@ func (I *JsonCfg) GetConfigFile(path string) *JsonCfg {
 }
 
 func TrackTime(config *JsonCfg) {
+	minIdleTime, err := time.ParseDuration(strconv.Itoa(config.MinIdleTime) + "s")
+
+	if err != nil {
+		log.Error("Could not parse MinIdleTime: err", err)
+	}
+
 	lastTime := time.Now()
 	lastWindow := GetCurrentWindowName()
 
@@ -71,8 +79,7 @@ func TrackTime(config *JsonCfg) {
 	for now := range c {
 		currentWindow := GetCurrentWindowName()
 
-		fmt.Println(GetIdleTime())
-		if currentWindow != lastWindow {
+		if currentWindow != lastWindow && GetIdleTime() < minIdleTime {
 			timeDiff := time.Since(lastTime).String()
 			fmt.Printf("Changed from [%s] to [%s] for [%v]\n", lastWindow, currentWindow, timeDiff)
 			lastTime = time.Now()

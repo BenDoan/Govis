@@ -1,5 +1,5 @@
 {
     "TickInterval" : 400,
-    "LogName" : "govis.json"
-
+    "LogName" : "govis.json",
+    "MinIdleTime" : 300
 }
