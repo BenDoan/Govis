@@ -1,17 +1,18 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/docopt/docopt.go"
-	"github.com/op/go-logging"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/docopt/docopt.go"
+	"github.com/op/go-logging"
+
+	"stathat.com/c/jconfig"
 )
 
 var log = logging.MustGetLogger("Govis")
@@ -35,38 +36,14 @@ func main() {
 	if err != nil {
 		log.Error("Could not parse arguments: %s", err)
 	}
-
 	fmt.Println(arguments)
 
-	c := JsonCfg{}
-	config := c.GetConfigFile(configFileName)
-
+	config := jconfig.LoadConfig("/home/ben/.govisrc")
 	TrackTime(config)
 }
 
-type JsonCfg struct {
-	TickInterval int
-	LogName      string
-	MinIdleTime  int
-}
-
-func (I *JsonCfg) GetConfigFile(path string) *JsonCfg {
-	b, err := ioutil.ReadFile(path)
-
-	if err != nil {
-		log.Error("%s", err)
-	}
-
-	err = json.Unmarshal(b, &I)
-
-	if err != nil {
-		log.Error("%s", err)
-	}
-	return I
-}
-
-func TrackTime(config *JsonCfg) {
-	minIdleTime, err := time.ParseDuration(strconv.Itoa(config.MinIdleTime) + "s")
+func TrackTime(config *jconfig.Config) {
+	minIdleTime, err := time.ParseDuration(strconv.Itoa(config.GetInt("MinIdleTime")) + "s")
 
 	if err != nil {
 		log.Error("Could not parse MinIdleTime: err", err)
@@ -75,7 +52,7 @@ func TrackTime(config *JsonCfg) {
 	lastTime := time.Now()
 	lastWindow := GetCurrentWindowName()
 
-	c := time.Tick(time.Duration(config.TickInterval) * time.Millisecond)
+	c := time.Tick(time.Duration(config.GetInt("TickInterval")) * time.Millisecond)
 	for now := range c {
 		currentWindow := GetCurrentWindowName()
 
