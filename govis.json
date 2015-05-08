@@ -2,6 +2,7 @@
     "TickInterval" : 400,
     "LogName" : "govis.json",
     "MinIdleTime" : 300,
+    "MinTimeDiff" : 5,
     "IgnorePatterns" : [
         "(Private Browsing)"
     ]
